@@ -5,13 +5,27 @@ import (
     "fmt"
     "os"
     "time"
+    "log"
+    "net/http"
+
 )
 
 func worker(id int, tasks <-chan string) {
-    fmt.Println("Starting worker", id)
 
+    fmt.Println("Starting worker", id)
     for task := range tasks {
-        fmt.Println(task)
+        log.Printf("worker %d got %s", id, task)
+        resp, err := http.Get(task)
+        if err != nil {
+            log.Fatalln(err)
+        }
+        //We Read the response body on the line below.
+        if err != nil {
+            log.Fatalln(err)
+        }
+        //Convert the body to type string
+        log.Printf("client: got response!\n")
+        log.Printf(resp.Status)
     }
 }
 
@@ -31,16 +45,18 @@ func main() {
 
 	//create a new channel called tasks
 	tasks := make(chan string)
-	//start a goroutine to read the file line by line and send each line to the tasks channel
-    go readFileLineByLine(tasks, scanner)
 
-    time.Sleep(10 * time.Millisecond) //wait a bit for queue to load some tasks
 
     //start 3 worker goroutines to receive tasks from the tasks channel and print them
     for w := 1; w <= 3; w++ {
         go worker(w, tasks)
+
     }
-    time.Sleep(50 * time.Millisecond) //make sure main doesn't exit before goroutines finish
+
+    //start a goroutine to read the file line by line and send each line to the tasks channel
+    readFileLineByLine(tasks, scanner)
+    close(tasks)
+    time.Sleep(500 * time.Millisecond) //make sure main doesn't exit before goroutines finish
 }
 
 
@@ -49,14 +65,13 @@ func readFileLineByLine(tasks chan <-string, scanner *bufio.Scanner) {
 	// Read and print lines
     for scanner.Scan() {
         line := scanner.Text()
-        // fmt.Println(line)
-
         tasks <- line
     }
     // Check for errors
     if err := scanner.Err(); err != nil {
         fmt.Println(err)
     }
+    
 
     
 }
