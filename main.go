@@ -29,7 +29,6 @@ func worker(id int, tasks <-chan string) {
     }
 }
 
-
 func main() {
 
 	// Open the file
@@ -45,7 +44,6 @@ func main() {
 
 	//create a new channel called tasks
 	tasks := make(chan string)
-
 
     //start 3 worker goroutines to receive tasks from the tasks channel and print them
     for w := 1; w <= 3; w++ {
