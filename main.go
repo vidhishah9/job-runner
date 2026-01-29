@@ -27,6 +27,7 @@ func worker(id int, tasks <-chan string, results chan<- string) {
         //send response to results channel
         results <- resp.Status
     }
+
 }
 
 func main() {
@@ -57,7 +58,9 @@ func main() {
     //start a goroutine to read the file line by line and send each line to the tasks channel
     readFileLineByLine(tasks, scanner)
     close(tasks)
-    time.Sleep(500 * time.Millisecond) //make sure main doesn't exit before goroutines finish
+    time.Sleep(2000 * time.Millisecond) //wait for workers finish processing
+    close(results)
+    
 }
 
 
